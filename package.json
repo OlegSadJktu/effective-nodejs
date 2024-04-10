@@ -1,0 +1,30 @@
+{
+  "name": "effective_nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "ts-node ./src/index.ts",
+    "prod": "npx tsc && node ./dist/src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.12.4",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "dlx": "^0.2.1",
+    "express": "^4.19.2",
+    "fastify": "^4.26.2",
+    "mongodb": "^6.5.0",
+    "node": "^18.20.0",
+    "pg": "^8.11.5",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.2",
+    "ts-node": "^10.9.2",
+    "ts-transformer-keys": "^0.4.4",
+    "yarn": "^1.22.22"
+  }
+}
