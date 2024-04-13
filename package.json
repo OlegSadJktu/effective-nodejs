@@ -27,6 +27,7 @@
     "sequelize": "^6.37.2",
     "ts-node": "^10.9.2",
     "ts-transformer-keys": "^0.4.4",
-    "yarn": "^1.22.22"
+    "yarn": "^1.22.22",
+    "zod": "^3.22.4"
   }
 }

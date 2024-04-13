@@ -1,22 +1,10 @@
 import { FastifyReply, FastifyRequest } from "fastify"
-import { Form } from ".."
-import { db } from "../db/db"
-import { keys } from "ts-transformer-keys"
+import { Answer, Form, formSchema } from ".."
+import { db, getCount } from "../db/db"
 // type FKeys = <T extends object>() => Array<keyof T>
 
 
 
-function removeExtraFields<T extends object>(obj): T {
-    console.log(typeof keys)
-    const ikeys = keys<T>()
-    const o: T = {} as T
-    ikeys.map((key) => {
-        if (key in obj) {
-            o[key] = obj[key]
-        }
-    })
-    return o
-}
 
 export async function getAll(req, res) {
     const forms = db.collection<Form>('forms')
@@ -29,9 +17,7 @@ export async function getAll(req, res) {
 export async function getById(req: FastifyRequest, res: FastifyReply) {
     const { formId } = req.params as {formId: number}
     const formIdNum = +formId 
-    console.log(typeof formIdNum )
     const form = await db.collection<Form>('forms').findOne({id: formIdNum})
-    console.log(formId, form)
     if (form === null) {
         res.code(404).send("not found")
     }
@@ -39,11 +25,46 @@ export async function getById(req: FastifyRequest, res: FastifyReply) {
 }
 
 export async function createNew(req, res) {
-    // const { ...form } = req.body as Form
-    const form = removeExtraFields<Form>(req.body)
+    const form = formSchema.parse(req.body)
+    const count = await getCount('forms')
     form.creation = Date.now()
+    form.id = count
+    let counter = 1
+    for (let field of form.fields) {
+        field.id = counter 
+        counter += 1
+    }
     const result = await db.collection<Form>('forms').insertOne(form)
     result.insertedId
     res.code(200).send(result.insertedId)
-    
+}
+
+export async function del(req, res) {
+    const { formId } = req.params as { formId: number }
+    const formIdNum = + formId
+    const result = await db.collection('forms').deleteOne({id: formIdNum})
+    if (result.deletedCount !== 1) {
+        return res.code(404).send('Not found')
+    }
+    const ansResult = await db.collection<Answer>('answers').deleteMany({formId: formIdNum})
+    return res.code(200).send(result.acknowledged)
+}
+
+export async function update(req, res) {
+    const { formId } = req.params as {formId: number}
+    const formIdNum = +formId
+    const form = formSchema.parse(req.body)
+    if (form.id in [undefined, null]) {
+        return res.code(400).send('Empty id')
+    }
+    const updateResult = await db.collection<Form>('forms').updateOne(
+        {id: form.id},
+        {
+            $set: form
+        }
+    )
+    if (updateResult.modifiedCount !== 1) {
+        return res.code(400).send('Form not found')
+    }
+    return res.code(200).send(form.id)
 }
