@@ -58,7 +58,7 @@ export const answerSchema = z.object({
     id: z.number().nullish(),
     formId: z.number(),
     data: z.map(z.number(), z.any()) 
-})
+}
 
 export type Answer = z.infer<typeof answerSchema>
 
