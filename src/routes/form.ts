@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify"
-import { Answer, Form, formSchema } from ".."
-import { db, getCount } from "../db/db"
+import { Answer, Form, formSchema } from "../index.js"
+import { db, getCount } from "../db/db.js"
 // type FKeys = <T extends object>() => Array<keyof T>
 
 

@@ -3,11 +3,13 @@
 import {fastify} from 'fastify'
 import { MongoClient } from "mongodb"
 
-import { db } from './db/db'
+import { db } from './db/db.js'
 
-import * as ans from './routes/answers'
-import * as forms from './routes/form'
-import {z} from 'zod'
+import * as ans from './routes/answers.js'
+import * as form from './routes/form.js'
+import {number, z} from 'zod'
+import * as swagger from '@fastify/swagger'
+import * as swaggerUi from '@fastify/swagger-ui'
 
 
 const FieldTypes = z.enum(['Text', 'Selection', 'Question'])
@@ -68,34 +70,9 @@ export const formSchema = z.object({
     title: z.string(),
     creation: z.number().nullish(),
     fields: fieldUnion.array(),
-    // fields: z.union([textFieldSchema, selectionFieldSchema, questionFieldSchema]).transform((a) => {
-    //     console.log("debug =>", a, a.type)
-    //     switch (a.type) {
-    //         case FieldTypes.enum.Question:
-    //             return questionFieldSchema.parse(a)
-    //         case FieldTypes.enum.Text:
-    //             return textFieldSchema.parse(a)
-    //         case FieldTypes.enum.Selection:
-    //             return selectionFieldSchema.parse(a)
-    //         default:
-    //             throw new Error(`Type not found ${a.type}`)
-    //     }
-    // }).array()
 })
 
 export type Form = z.infer<typeof formSchema>
-
-
-
-// export interface Form {
-//     id: number,
-//     author: number,
-//     title: string,
-//     creation: number,
-//     fieldIdCount: number,
-//     fields: Array<Field>,
-// }
-
 
 
 
@@ -104,6 +81,47 @@ const PORT = 3000
 const fast = fastify({
     logger: true
 })
+
+await fast.register(swagger.default, {
+    openapi: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Test swagger',
+            description: 'Testing the Fastify swagger API',
+            version: '0.1.0'
+        },
+        servers: [
+            {
+                url: 'http://localhost:3000',
+                description: 'Development server'
+            }
+        ],
+        tags: [
+            { name: 'user', description: 'User related end-points' },
+            { name: 'code', description: 'Code related end-points' }
+        ],
+        components: {
+            securitySchemes: {
+                apiKey: {
+                type: 'apiKey',
+                name: 'apiKey',
+                in: 'header'
+                }
+            }
+        },
+        externalDocs: {
+            url: 'https://swagger.io',
+            description: 'Find more info here'
+        }
+    }
+
+    
+})
+
+await fast.register(swaggerUi.default, {
+    routePrefix: '/documentation'
+})
+
 fast.setErrorHandler((er, req, res) => {
     console.log(er.message)
     res.code(500).send({
@@ -113,11 +131,92 @@ fast.setErrorHandler((er, req, res) => {
 
 })
 
-fast.get('/', forms.getAll)
-fast.post('/forms', forms.createNew)
-fast.delete('/forms/:formId', forms.del)
-fast.get('/forms/:formId', forms.getById)
-fast.put('/forms/:formId', forms.update)
+fast.get('/forms', {
+    schema: {
+        description: 'Get all forms',
+        params: {},
+        response: {
+            200: {
+                type: 'array',
+                items: {
+                    author: {type: 'number'},
+                    creation: {type: 'number'},
+                    fields : {
+                        type: 'array',
+                        items: {
+                            id: {type: 'number'},
+                            options: {
+                                type: 'array',
+                                items: {
+                                    type: 'string'
+                                }
+                            },
+                            text: {type:'string'},
+                            type: {type: 'string'}
+                        }
+                    }
+                }
+            },
+            default: {
+                description: "Error",
+                properties: {
+                }
+            }
+        }
+    }
+}, form.getAll)
+fast.post('/forms', {
+    schema: {
+        description: 'Create form',
+        body: {
+            type: 'object',
+            properties: {
+                author: {
+                    type: 'number',
+                    description: 'Creator ID'
+                },
+                title: {
+                    type: 'string',
+                    description: 'Form title'
+                }
+            }
+        }
+    }
+}, form.createNew)
+fast.delete('/forms/:formId', {
+    schema: {
+        description: 'Delete form by ID',
+        params: {
+            type: 'object',
+            properties: {
+                formId: {
+                    type: 'number',
+                    description: 'Form ID'
+                }
+            }
+        },
+        response: {
+            200: {
+                description: 'Successful response',
+                properties: {
+                    formId: { type: 'number' }
+                }
+            },
+            default: {
+                description: "Error",
+                properties: {
+                    error: {type: 'string'}
+                }
+            }
+        }
+    }
+}, form.del)
+fast.get('/forms/:formId', form.getById)
+fast.put('/forms/:formId', {
+    schema: {
+        description: 'Update form. The same parameters as in the POST request'
+    }
+}, form.update)
 fast.get('/forms/:formId/answers', ans.getAllByFormId)
 fast.post('/forms/:formId/answers', ans.create)
 fast.delete('/forms/:formId/answers/:answerId', ans.del)

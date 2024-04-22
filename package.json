@@ -2,6 +2,7 @@
   "name": "effective_nodejs",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.ts",
   "scripts": {
     "dev": "ts-node ./src/index.ts",
@@ -17,6 +18,8 @@
     "typescript": "^5.4.3"
   },
   "dependencies": {
+    "@fastify/swagger": "^8.14.0",
+    "@fastify/swagger-ui": "^3.0.0",
     "dlx": "^0.2.1",
     "express": "^4.19.2",
     "fastify": "^4.26.2",

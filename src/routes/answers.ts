@@ -1,5 +1,5 @@
-import { Answer, answerSchema, Form, needAnswer } from "..";
-import { db, getCount } from "../db/db";
+import { Answer, answerSchema, Form, needAnswer } from "../index.js";
+import { db, getCount } from "../db/db.js";
 
 export async function getAllByFormId(req, res) {
     const { formId } = req.params

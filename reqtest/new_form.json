@@ -1,0 +1,23 @@
+{
+    "author": 2,
+    "title": "hello",
+    "fields": [ 
+        {
+            "type": "Selection",
+            "isActive": true,
+            "text": "selection",
+            "options": ["hello", "world"]
+        },
+        {
+            "type": "Text",
+            "answer": "answer",
+            "text": "text"
+        },
+        {
+            "type": "Question",
+            "answer": "answer",
+            "text": "question"
+        }
+
+    ]
+}

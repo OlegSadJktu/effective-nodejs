@@ -1,5 +1,5 @@
 import { MongoClient } from "mongodb"
-import { Form } from "src"
+import { Form } from "src/index.js"
 
 export type CounterType = {
     user: number,
