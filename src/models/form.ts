@@ -1,28 +1,13 @@
+import { z } from "zod"
+import { fieldUnion } from "./field.js"
 
-// export class Form {
-//     id: number
-//     title: string
-//     fields: Array<Field>
-//     creation: Date
-// }
+export const formSchema = z.object({
+    id: z.number().nullish(),
+    author: z.coerce.number().nullish(),
+    title: z.string(),
+    creation: z.number().nullish(),
+    fields: fieldUnion.array(),
+})
 
-import { DataTypes, Sequelize } from "sequelize";
+export type Form = z.infer<typeof formSchema>
 
-
-export default (sequelize: Sequelize) => {
-    sequelize.define('form', {
-        id: {
-            allowNull: false,
-            autoIncrement: true,
-            primaryKey: true,
-            type: DataTypes.INTEGER,
-        },
-        title: {
-            allowNull: false,
-            type: DataTypes.STRING
-
-
-        }
-
-    });
-}

@@ -1,21 +1,28 @@
-import { Answer, answerSchema, Form, needAnswer } from "../index.js";
+import { Answer, answerSchema, needAnswer } from "../../src/models/answer.js";
 import { db, getCount } from "../db/db.js";
+import { Form } from "../models/form.js";
 
 export async function getAllByFormId(req, res) {
     const { formId } = req.params
     const formIdNum = +formId
     const answers = await db.collection<Answer>('answers').find({formId: formIdNum}).toArray()
     if (answers.length < 1) {
-        return res.code(404).send('Not found')
+        return res.status(404).send('Not found')
     }
-    return res.send(answers)
+    return res.json(answers)
     
 }
 
 export async function create(req, res) {
     const { formId } = req.params
     const formIdNum = +formId
-    const answer = answerSchema.parse(req.body)
+    let answer
+    try {
+        answer = answerSchema.parse(req.body)
+    } catch {
+        res.status(500).send("invalid data")
+        return
+    }
     const form = await db.collection<Form>("forms").findOne({id: formIdNum})
     const interestedIds = Array()
     for (let field of form.fields) {
@@ -30,7 +37,7 @@ export async function create(req, res) {
         }
     }
     if (interestedIds.length !== answer.data.size) {
-        return res.code(503).send('No such anwsers')
+        return res.status(503).send('No such anwsers')
 
     }
     const ansId = await getCount('answers')
@@ -43,7 +50,7 @@ export async function del(req, res) {
     const answerIdNum = +answerId
     const result = await db.collection<Answer>('answers').deleteOne({id: answerIdNum})
     if (result.deletedCount < 1) {
-        return res.code(404).send('Not found')
+        return res.status(404).send('Not found')
     }
-    return res.code(200).send(answerIdNum)
+    return res.status(200).send(answerIdNum)
 }
