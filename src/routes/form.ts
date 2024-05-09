@@ -29,10 +29,13 @@ export async function getById(req, res) {
 }
 
 export async function createNew(req, res) {
-    let form
+    let form: Form
     try {
         form = formSchema.parse(req.body)
-    } catch {
+        console.log(req.body)
+    } catch (err) {
+        console.log(req.body)
+        console.log(err.message)
         res.status(500).send("invalid data")
         return
     }
@@ -67,8 +70,9 @@ export async function update(req, res) {
     if (form.id in [undefined, null]) {
         return res.status(400).send('Empty id')
     }
+    console.log(`form id: ${formIdNum}`)
     const updateResult = await db.collection<Form>('forms').updateOne(
-        {id: form.id},
+        {id: formIdNum},
         {
             $set: form
         }
